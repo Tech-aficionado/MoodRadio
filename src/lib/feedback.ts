@@ -22,8 +22,14 @@ const EMPTY: TasteFeedback = {
   favoriteArtists: [],
   avoidArtists: [],
   blockedVideoIds: [],
+  recentArtists: [],
+  recentTracks: [],
   updatedAt: new Date(0).toISOString(),
 };
+
+/** How many recent artists to remember and exclude from new suggestions. */
+const RECENT_ARTIST_LIMIT = 30;
+const RECENT_TRACK_LIMIT = 40;
 
 interface StoredFeedback extends TasteFeedback {
   /** artist -> skip count, so one accidental skip does not ban an artist. */
@@ -43,6 +49,8 @@ function read(): StoredFeedback {
       favoriteArtists: parsed.favoriteArtists ?? [],
       avoidArtists: parsed.avoidArtists ?? [],
       blockedVideoIds: parsed.blockedVideoIds ?? [],
+      recentArtists: parsed.recentArtists ?? [],
+      recentTracks: parsed.recentTracks ?? [],
       updatedAt: parsed.updatedAt ?? EMPTY.updatedAt,
       skipCounts: parsed.skipCounts ?? {},
       likeCounts: parsed.likeCounts ?? {},
@@ -117,9 +125,55 @@ export function recordSkip(artist: string, videoId?: string): void {
   write(data);
 }
 
+/**
+ * Record that a track was actually played.
+ *
+ * This is the listening history the model never had. Each request used to be
+ * stateless, so the model kept returning its favourite anchors; passing these
+ * back as an exclusion list is what breaks the loop.
+ */
+export function recordPlay(artist: string, title?: string, videoId?: string): void {
+  if (!artist && !title) return;
+  const data = read();
+  const key = normaliseArtist(artist);
+
+  if (key) {
+    // Move to front, de-duplicated, so the list is genuinely "most recent".
+    data.recentArtists = [key, ...data.recentArtists.filter((a) => a !== key)].slice(
+      0,
+      RECENT_ARTIST_LIMIT
+    );
+  }
+
+  if (title) {
+    const pair = `${artist} - ${title}`.trim();
+    data.recentTracks = [pair, ...data.recentTracks.filter((t) => t !== pair)].slice(
+      0,
+      RECENT_TRACK_LIMIT
+    );
+  }
+
+  void videoId; // reserved: per-video history is already covered by blockedVideoIds
+  write(data);
+}
+
 export function loadFeedback(): TasteFeedback {
-  const { favoriteArtists, avoidArtists, blockedVideoIds, updatedAt } = read();
-  return { favoriteArtists, avoidArtists, blockedVideoIds, updatedAt };
+  const {
+    favoriteArtists,
+    avoidArtists,
+    blockedVideoIds,
+    recentArtists,
+    recentTracks,
+    updatedAt,
+  } = read();
+  return {
+    favoriteArtists,
+    avoidArtists,
+    blockedVideoIds,
+    recentArtists,
+    recentTracks,
+    updatedAt,
+  };
 }
 
 export function clearFeedback(): void {

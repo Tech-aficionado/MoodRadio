@@ -53,5 +53,12 @@ export interface TasteFeedback {
   avoidArtists: string[];
   /** Video ids never to queue again. */
   blockedVideoIds: string[];
+  /**
+   * Artists heard recently, most recent first. Fed to the model as an
+   * exclusion list so consecutive sessions stop returning the same names.
+   */
+  recentArtists: string[];
+  /** Recent "Artist - Title" pairs, for finer-grained repeat avoidance. */
+  recentTracks: string[];
   updatedAt: string;
 }

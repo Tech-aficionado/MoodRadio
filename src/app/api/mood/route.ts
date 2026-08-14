@@ -26,32 +26,51 @@ const VALID_EMOTIONS = [
   'dreamy', 'euphoric',
 ];
 
-function buildPrompt(text: string, userProfile?: string): string {
+function buildPrompt(
+  text: string,
+  userProfile?: string,
+  recentArtists?: string[]
+): string {
   const profileContext = userProfile
-    ? `\n\nTHE USER'S TASTE PROFILE (built from their own YouTube library and in-app behaviour):\n${userProfile}\n
-How to use it:
-- Anchor at least 3 of the 5 keywords in artists/genres/languages they demonstrably listen to
+    ? `\n\n=== THE USER'S TASTE PROFILE (from their own YouTube library and in-app behaviour) ===
+${userProfile}
+
+This profile is a REQUIREMENT, not a hint:
+- At least 3 of the 5 keywords MUST be artists or genres consistent with it
 - Use their preferred languages in roughly the proportion shown
 - Respect their energy and era preference unless the mood text clearly overrides it
-- Treat any "NEVER suggest" list as absolute — do not name those artists at all
-- Do not simply echo their top artists back; include at least 1 adjacent artist they would plausibly discover and enjoy`
+- Any "NEVER suggest" list is absolute
+- Include at least 1 adjacent artist they plausibly do NOT know yet, so the queue is not just a mirror`
+    : '\n\n(No taste profile available — infer from the text alone.)';
+
+  // The single biggest cause of repetition was worked examples naming real
+  // artists: few-shot names dominate the output distribution, so the same
+  // handful came back on nearly every request. The example below is now
+  // structural only, and this list closes the loop across requests.
+  const exclusions = recentArtists?.length
+    ? `\n\n=== ALREADY HEARD RECENTLY — DO NOT SUGGEST ANY OF THESE ===
+${recentArtists.slice(0, 25).join(', ')}
+
+Pick different artists. If an excluded artist feels like the perfect fit, choose
+a different artist in the same lane instead.`
     : '';
 
   return `You are a music recommendation engine for MoodRadio. Analyse the user's emotional text and generate YouTube search queries that find ACTUAL SONGS (not podcasts, not vlogs, not ASMR, not meditation talks, not compilations).
 
-CRITICAL RULES for search_keywords:
-- Each keyword MUST be a search that finds a REAL, SPECIFIC song on YouTube
-- Preferred format: "[Artist name] [Song name]"
-- Otherwise: "[specific genre] [mood descriptor] song"
+RULES for search_keywords:
+- Each keyword MUST find a REAL, SPECIFIC song on YouTube
+- Preferred format: "<Artist Name> <Song Title>"
+- Otherwise: "<specific genre> <mood descriptor> song"
 - ALWAYS include an artist name, or the word "song"/"audio"
 - NEVER use bare generic terms like "sad music playlist" or "chill vibes"
-- Generate exactly 5 keywords (more variety = better queue)
-- Mix: 3 specific artist+song searches + 2 genre-based searches
-- Indian audience: mix Hindi / Punjabi / English according to their profile
-- Vary the artists — do not repeat the same artist twice
-${profileContext}
+- Produce exactly 5 keywords: 3 specific artist+song, 2 genre-based
+- **All 5 must be DIFFERENT artists.** Never repeat an artist within a response
+- Do NOT default to the single most famous artist in a genre. Prefer a deeper
+  cut, or an artist one step sideways from the obvious pick
+- Vary your choices between requests: if you would normally reach for a
+  particular household name, choose a different one this time${profileContext}${exclusions}
 
-Return ONLY valid JSON, no markdown fence:
+Return ONLY valid JSON, no markdown fence, in exactly this shape:
 
 {
   "primary_emotion": "one of: ${VALID_EMOTIONS.join(', ')}",
@@ -59,15 +78,21 @@ Return ONLY valid JSON, no markdown fence:
   "energy_desire": "high|medium|low",
   "color_hex": "#hexcolor",
   "color_gradient": ["#start", "#end"],
-  "search_keywords": ["artist song 1", "artist song 2", "artist song 3", "genre mood song 4", "genre descriptor audio 5"],
+  "search_keywords": [
+    "<Artist A> <Song Title>",
+    "<Artist B> <Song Title>",
+    "<Artist C> <Song Title>",
+    "<genre> <mood> song",
+    "<genre descriptor> audio"
+  ],
   "ambient_particles": "fast|medium|slow|none"
 }
 
-EXAMPLE for "I feel like dancing tonight":
-{"primary_emotion":"euphoric","intensity":8,"energy_desire":"high","color_hex":"#FF6B35","color_gradient":["#FF6B35","#FFD700"],"search_keywords":["Dua Lipa Don't Start Now","The Weeknd Blinding Lights","Diljit Dosanjh Born To Shine","upbeat dance pop song","energetic EDM festival audio"],"ambient_particles":"fast"}
+The bracketed placeholders above are FORMAT ILLUSTRATIONS. Do not output them
+literally, and do not treat any artist named anywhere in this prompt as a
+suggestion — choose artists that fit this specific user and this specific mood.
 
-EXAMPLE for "feeling so alone at 3am":
-{"primary_emotion":"lonely","intensity":6,"energy_desire":"low","color_hex":"#607D8B","color_gradient":["#607D8B","#37474F"],"search_keywords":["Arijit Singh Phir Le Aya Dil","The Weeknd Call Out My Name","Prateek Kuhad cold mess","late night emotional R&B song","melancholy indie audio"],"ambient_particles":"slow"}
+Ensure color_hex is bright enough to read as text on a near-black background.
 
 User's text: "${text}"
 
@@ -265,6 +290,7 @@ export async function POST(request: NextRequest) {
       text?: unknown;
       userProfile?: unknown;
       idToken?: unknown;
+      recentArtists?: unknown;
     };
 
     const text = typeof body.text === 'string' ? body.text.trim() : '';
@@ -273,10 +299,19 @@ export async function POST(request: NextRequest) {
         ? body.userProfile.trim()
         : undefined;
     const idToken = typeof body.idToken === 'string' ? body.idToken : null;
+    const recentArtists = Array.isArray(body.recentArtists)
+      ? body.recentArtists.map(String).filter(Boolean).slice(0, 25)
+      : [];
 
     if (!text) {
       return NextResponse.json({ error: 'Text is required' }, { status: 400 });
     }
+
+    // "It ignores my taste profile" is usually the profile never arriving at
+    // all, which was previously invisible. Make it observable.
+    console.log(
+      `[MOOD] profile=${userProfile ? `applied (${userProfile.length} chars)` : 'ABSENT'} history=${recentArtists.length} artist(s)`
+    );
 
     if (!isAiConfigured()) {
       console.error('[MOOD] AI backend is not configured');
@@ -284,10 +319,16 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      const raw = await generateWithAi(idToken, buildPrompt(text, userProfile), {
-        maxOutputTokens: 700,
-        temperature: 0.85,
-      });
+      const raw = await generateWithAi(
+        idToken,
+        buildPrompt(text, userProfile, recentArtists),
+        {
+          maxOutputTokens: 700,
+          // Slightly hotter than before: at 0.85 the model kept converging on
+          // the same handful of household names across requests.
+          temperature: 0.95,
+        }
+      );
 
       const jsonMatch = raw.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
@@ -298,6 +339,20 @@ export async function POST(request: NextRequest) {
         JSON.parse(jsonMatch[0]) as Record<string, unknown>
       );
 
+      // Belt and braces: the prompt asks for 5 distinct artists, but a model
+      // will still occasionally repeat one. Drop duplicates by leading artist
+      // token so the queue does not end up dominated by a single name.
+      const seenArtist = new Set<string>();
+      const deduped = analysis.search_keywords.filter((k) => {
+        const lead = k.toLowerCase().split(/\s+/).slice(0, 2).join(' ');
+        if (seenArtist.has(lead)) return false;
+        seenArtist.add(lead);
+        return true;
+      });
+      if (deduped.length >= 3) {
+        analysis.search_keywords = deduped;
+      }
+
       console.log(
         '[MOOD] AI ok —',
         analysis.primary_emotion,
@@ -305,7 +360,11 @@ export async function POST(request: NextRequest) {
         analysis.search_keywords.join(' / ')
       );
 
-      return NextResponse.json({ ...analysis, _source: 'ai' });
+      return NextResponse.json({
+        ...analysis,
+        _source: 'ai',
+        _profileApplied: !!userProfile,
+      });
     } catch (err) {
       const code = err instanceof AiProxyError ? err.code : 'UNKNOWN';
       const message = err instanceof Error ? err.message : String(err);
