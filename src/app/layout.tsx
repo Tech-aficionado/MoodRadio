@@ -41,15 +41,17 @@ export const metadata: Metadata = {
     title: 'MoodRadio',
     description: 'Music that reads your mood',
   },
-  icons: {
-    icon: [
-      { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-      { url: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
-    ],
-    apple: [
-      { url: '/icons/icon-192.png', sizes: '192x192' },
-    ],
-  },
+  // No `icons:` block on purpose.
+  //
+  // An explicit metadata.icons OVERRIDES Next's file conventions, so declaring
+  // the PNGs here meant src/app/icon.svg and src/app/apple-icon.png were never
+  // linked in the HTML at all — the SVG was served but no browser ever used it,
+  // and every tab fell back to a rasterised PNG. It also emitted three
+  // competing `rel="icon"` tags.
+  //
+  // Letting the conventions win gives one crisp vector favicon plus a proper
+  // apple-touch-icon, and the 192/512 PWA icons stay where they belong: in
+  // public/manifest.json, which does not need <link rel="icon"> duplicates.
 };
 
 export default function RootLayout({
