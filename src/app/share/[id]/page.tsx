@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import { createClient } from '@supabase/supabase-js';
-import { getEmotionColor } from '@/types';
+import { getEmotionColor, getEmotionGradient } from '@/types';
 
 function getSupabase() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -70,7 +70,7 @@ export default async function SharePage({ params }: SharePageProps) {
   }
 
   const color = entry.color_hex || getEmotionColor(entry.emotion);
-  const gradient = entry.color_gradient || [color, `${color}80`];
+  const gradient = entry.color_gradient || getEmotionGradient(entry.emotion);
 
   return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center p-6">
