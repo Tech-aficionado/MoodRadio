@@ -5,6 +5,10 @@ import {
   AiProxyError,
   isAiConfigured,
 } from '@/lib/ai-proxy';
+import {
+  getEmotionColor,
+  getEmotionGradient,
+} from '@/lib/mood-palette';
 
 /**
  * Mood analysis endpoint.
@@ -109,17 +113,24 @@ function normalise(parsed: Record<string, unknown>): MoodAnalysis {
   const energy = String(parsed.energy_desire || 'medium');
   const particles = String(parsed.ambient_particles || 'medium');
 
+  const emotion = String(parsed.primary_emotion || 'reflective').toLowerCase();
+
+  // Validate gradient: must be exactly 2 hex strings (#RRGGBB or #RGB).
+  const isValidHex = (v: unknown): v is string =>
+    typeof v === 'string' && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v);
+  const validGradient =
+    gradient.length === 2 && isValidHex(gradient[0]) && isValidHex(gradient[1]);
+
   return {
-    primary_emotion: String(parsed.primary_emotion || 'reflective').toLowerCase(),
+    primary_emotion: emotion,
     intensity: Math.min(10, Math.max(1, Number(parsed.intensity) || 5)),
     energy_desire: (['high', 'medium', 'low'].includes(energy)
       ? energy
       : 'medium') as MoodAnalysis['energy_desire'],
-    color_hex: String(parsed.color_hex || '#78909C'),
-    color_gradient:
-      gradient.length === 2
-        ? [String(gradient[0]), String(gradient[1])]
-        : ['#78909C', '#37474F'],
+    color_hex: String(parsed.color_hex || getEmotionColor(emotion)),
+    color_gradient: validGradient
+      ? [String(gradient[0]), String(gradient[1])]
+      : getEmotionGradient(emotion),
     search_keywords: keywords.length
       ? keywords.slice(0, 5)
       : ['indie chill song', 'lo-fi hip hop song', 'ambient music audio'],
@@ -146,7 +157,7 @@ const FALLBACK_MOODS: Record<string, FallbackMood> = {
     cues: ['sad', 'down', 'blue', 'cry', 'crying', 'hurt', 'broken', 'heartbreak', 'miserable', 'depressed', 'low', 'upset', 'grief'],
     analysis: {
       primary_emotion: 'sad', intensity: 6, energy_desire: 'low',
-      color_hex: '#4A90D9', color_gradient: ['#4A90D9', '#1a3a5c'],
+      color_hex: getEmotionColor('sad'), color_gradient: getEmotionGradient('sad'),
       search_keywords: ['Arijit Singh Channa Mereya', 'Lewis Capaldi Someone You Loved', 'Billie Eilish when the party is over', 'sad hindi song audio', 'heartbreak indie song'],
       ambient_particles: 'slow',
     },
@@ -155,7 +166,7 @@ const FALLBACK_MOODS: Record<string, FallbackMood> = {
     cues: ['happy', 'good', 'great', 'joy', 'joyful', 'smile', 'smiling', 'cheerful', 'sunny', 'grateful', 'blessed', 'won', 'celebrate'],
     analysis: {
       primary_emotion: 'happy', intensity: 7, energy_desire: 'high',
-      color_hex: '#FFD700', color_gradient: ['#FFD700', '#FF6B35'],
+      color_hex: getEmotionColor('happy'), color_gradient: getEmotionGradient('happy'),
       search_keywords: ['Pharrell Williams Happy', 'Dua Lipa Levitating', 'Diljit Dosanjh Lover', 'feel good pop song', 'upbeat bollywood song audio'],
       ambient_particles: 'fast',
     },
@@ -164,7 +175,7 @@ const FALLBACK_MOODS: Record<string, FallbackMood> = {
     cues: ['angry', 'anger', 'rage', 'furious', 'mad', 'pissed', 'hate', 'annoyed', 'frustrated', 'irritated', 'fed up'],
     analysis: {
       primary_emotion: 'angry', intensity: 8, energy_desire: 'high',
-      color_hex: '#E74C3C', color_gradient: ['#E74C3C', '#8B0000'],
+      color_hex: getEmotionColor('angry'), color_gradient: getEmotionGradient('angry'),
       search_keywords: ['Eminem Lose Yourself', 'Linkin Park In The End', 'KR$NA Playing With Fire', 'aggressive rap song', 'intense hip hop audio'],
       ambient_particles: 'fast',
     },
@@ -173,7 +184,7 @@ const FALLBACK_MOODS: Record<string, FallbackMood> = {
     cues: ['calm', 'peace', 'peaceful', 'relax', 'relaxed', 'chill', 'quiet', 'still', 'unwind', 'serene', 'rest', 'breathe'],
     analysis: {
       primary_emotion: 'calm', intensity: 3, energy_desire: 'low',
-      color_hex: '#7ED6A0', color_gradient: ['#7ED6A0', '#2E8B57'],
+      color_hex: getEmotionColor('calm'), color_gradient: getEmotionGradient('calm'),
       search_keywords: ['Prateek Kuhad Kasoor', 'Bon Iver Skinny Love', 'Novo Amor Anchor', 'calm acoustic guitar song', 'soft indie folk audio'],
       ambient_particles: 'slow',
     },
@@ -182,7 +193,7 @@ const FALLBACK_MOODS: Record<string, FallbackMood> = {
     cues: ['lonely', 'alone', 'empty', 'isolated', 'nobody', 'miss', 'missing', 'abandoned', 'distant', '3am'],
     analysis: {
       primary_emotion: 'lonely', intensity: 5, energy_desire: 'low',
-      color_hex: '#607D8B', color_gradient: ['#607D8B', '#37474F'],
+      color_hex: getEmotionColor('lonely'), color_gradient: getEmotionGradient('lonely'),
       search_keywords: ['The Weeknd Call Out My Name', 'Arijit Singh Phir Le Aya Dil', 'Cigarettes After Sex Apocalypse', 'late night lonely R&B song', 'midnight emotional audio'],
       ambient_particles: 'slow',
     },
@@ -191,7 +202,7 @@ const FALLBACK_MOODS: Record<string, FallbackMood> = {
     cues: ['energetic', 'energy', 'hype', 'pumped', 'workout', 'gym', 'run', 'running', 'dance', 'dancing', 'party', 'motivated', 'lets go'],
     analysis: {
       primary_emotion: 'energetic', intensity: 9, energy_desire: 'high',
-      color_hex: '#FF6B35', color_gradient: ['#FF6B35', '#FFD700'],
+      color_hex: getEmotionColor('energetic'), color_gradient: getEmotionGradient('energetic'),
       search_keywords: ['Diljit Dosanjh Born To Shine', 'The Weeknd Blinding Lights', 'AP Dhillon Excuses', 'workout EDM song', 'hype trap audio'],
       ambient_particles: 'fast',
     },
@@ -200,7 +211,7 @@ const FALLBACK_MOODS: Record<string, FallbackMood> = {
     cues: ['nostalgic', 'nostalgia', 'memories', 'remember', 'childhood', 'old days', 'throwback', 'past', 'used to', 'back then'],
     analysis: {
       primary_emotion: 'nostalgic', intensity: 5, energy_desire: 'medium',
-      color_hex: '#D4A373', color_gradient: ['#D4A373', '#8B6914'],
+      color_hex: getEmotionColor('nostalgic'), color_gradient: getEmotionGradient('nostalgic'),
       search_keywords: ['Arijit Singh Tum Hi Ho', 'Coldplay The Scientist', 'Arctic Monkeys 505', 'old bollywood song audio', 'nostalgic 90s hindi song'],
       ambient_particles: 'medium',
     },
@@ -209,7 +220,7 @@ const FALLBACK_MOODS: Record<string, FallbackMood> = {
     cues: ['anxious', 'anxiety', 'stress', 'stressed', 'worried', 'nervous', 'overwhelmed', 'panic', 'tense', 'pressure', 'exam', 'deadline'],
     analysis: {
       primary_emotion: 'anxious', intensity: 7, energy_desire: 'low',
-      color_hex: '#9B59B6', color_gradient: ['#9B59B6', '#4A235A'],
+      color_hex: getEmotionColor('anxious'), color_gradient: getEmotionGradient('anxious'),
       search_keywords: ['Radiohead No Surprises', 'Joji Slow Dancing in the Dark', 'Lauv Modern Loneliness', 'calming ambient piano song', 'slow lo-fi audio'],
       ambient_particles: 'slow',
     },
@@ -218,7 +229,7 @@ const FALLBACK_MOODS: Record<string, FallbackMood> = {
     cues: ['tired', 'exhausted', 'drained', 'sleepy', 'burnt out', 'burnout', 'worn out', 'long day', 'no energy', 'spent'],
     analysis: {
       primary_emotion: 'reflective', intensity: 4, energy_desire: 'low',
-      color_hex: '#78909C', color_gradient: ['#78909C', '#37474F'],
+      color_hex: getEmotionColor('reflective'), color_gradient: getEmotionGradient('reflective'),
       search_keywords: ['Prateek Kuhad cold mess', 'Keshi beside you', 'Rex Orange County Best Friend', 'mellow bedroom pop song', 'soft lo-fi chill audio'],
       ambient_particles: 'slow',
     },
@@ -227,7 +238,7 @@ const FALLBACK_MOODS: Record<string, FallbackMood> = {
     cues: ['love', 'loved', 'crush', 'romantic', 'romance', 'date', 'her', 'him', 'butterflies', 'in love'],
     analysis: {
       primary_emotion: 'romantic', intensity: 6, energy_desire: 'medium',
-      color_hex: '#E91E63', color_gradient: ['#E91E63', '#880E4F'],
+      color_hex: getEmotionColor('romantic'), color_gradient: getEmotionGradient('romantic'),
       search_keywords: ['Arijit Singh Raabta', 'Ed Sheeran Perfect', 'Anuv Jain Husn', 'romantic hindi song audio', 'soft love song'],
       ambient_particles: 'medium',
     },
@@ -236,7 +247,7 @@ const FALLBACK_MOODS: Record<string, FallbackMood> = {
 
 const DEFAULT_FALLBACK: MoodAnalysis = {
   primary_emotion: 'reflective', intensity: 4, energy_desire: 'medium',
-  color_hex: '#78909C', color_gradient: ['#78909C', '#37474F'],
+  color_hex: getEmotionColor('reflective'), color_gradient: getEmotionGradient('reflective'),
   search_keywords: ['Tame Impala Let It Happen', 'Prateek Kuhad Kasoor', 'Steve Lacy Dark Red', 'indie chill song audio', 'lo-fi hip hop song'],
   ambient_particles: 'medium',
 };
