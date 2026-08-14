@@ -1,8 +1,8 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, useRef, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useRef, ReactNode } from 'react';
 import { Track, MoodAnalysis } from '@/types';
-import { recordLike, recordSkip, loadFeedback } from '@/lib/feedback';
+import { recordLike, recordSkip, recordPlay, loadFeedback } from '@/lib/feedback';
 
 interface PlayerControls {
   playVideo: () => void;
@@ -52,6 +52,15 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const registerPlayerControls = useCallback((controls: PlayerControls) => {
     playerControlsRef.current = controls;
   }, []);
+
+  // Record listening history from ONE place. `setCurrentTrack` is called from
+  // play(), next() and previous(), so hooking the state rather than each caller
+  // guarantees nothing is missed.
+  useEffect(() => {
+    if (currentTrack && (currentTrack.artist || currentTrack.title)) {
+      recordPlay(currentTrack.artist, currentTrack.title, currentTrack.videoId);
+    }
+  }, [currentTrack]);
 
   const play = useCallback((track?: Track) => {
     if (track) {

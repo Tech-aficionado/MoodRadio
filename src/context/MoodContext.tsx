@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { MoodAnalysis } from '@/types';
 import { ensureIdToken } from '@/lib/auth-token';
+import { loadFeedback } from '@/lib/feedback';
 
 interface MoodContextType {
   mood: MoodAnalysis | null;
@@ -28,24 +29,35 @@ export function MoodProvider({ children }: { children: ReactNode }) {
     setIsAnalyzing(true);
     try {
       const idToken = await ensureIdToken();
+      // Recently-heard artists go up as an exclusion list — without this each
+      // request is stateless and the model returns the same names every time.
+      const { recentArtists } = loadFeedback();
 
       const response = await fetch('/api/mood', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, userProfile, idToken }),
+        body: JSON.stringify({ text, userProfile, idToken, recentArtists }),
       });
 
       if (!response.ok) {
         throw new Error('Mood analysis failed');
       }
 
-      const analysis: MoodAnalysis & { _source?: string; _reason?: string } =
-        await response.json();
+      const analysis: MoodAnalysis & {
+        _source?: string;
+        _reason?: string;
+        _profileApplied?: boolean;
+      } = await response.json();
 
       // Make a silent AI outage visible instead of passing it off as taste.
       if (analysis._source === 'fallback') {
         console.warn(
-          `[MOOD] AI unavailable — using fallback. Reason: ${analysis._reason ?? 'unknown'}`
+          `[MOOD] AI unavailable — using fallback. Reason: ${analysis._reason ?? 'suppressed in production'}`
+        );
+      } else if (analysis._profileApplied === false) {
+        console.warn(
+          '[MOOD] No taste profile was sent, so suggestions are generic. ' +
+            'Connect YouTube (or rebuild the profile via the "Personalised" chip) to fix this.'
         );
       }
 
