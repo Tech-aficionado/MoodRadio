@@ -310,10 +310,16 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* === MAIN CONTENT === */}
-      <div className="relative z-10 flex h-full flex-col items-center justify-center px-6 sm:px-10">
+      {/* === MAIN CONTENT ===
+          `items-center` + `my-auto` on the child centres the column when there
+          is room and lets it scroll when there is not. Using `justify-center`
+          here instead would clip the TOP of an overflowing column with no way
+          to reach it, because <main> is overflow-hidden: at 390px the decoded
+          state needs ~722px, which exceeds an iPhone SE (667) outright and any
+          phone once the browser chrome is showing. */}
+      <div className="relative z-10 flex h-full flex-col items-center overflow-y-auto overscroll-contain px-6 sm:px-10">
         <motion.div
-          className="w-full max-w-xl"
+          className="my-auto w-full max-w-xl py-6"
           animate={{
             y: hasTrack ? '-12vh' : 0,
             opacity: hasTrack ? 0.3 : 1,
@@ -325,7 +331,7 @@ export default function Home() {
             {!hasTrack && !isAnalyzing && !mood && (
               <motion.div
                 key="headline"
-                className="mb-16"
+                className="mb-8 sm:mb-16"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
@@ -347,7 +353,7 @@ export default function Home() {
             )}
 
             {!hasTrack && !isAnalyzing && mood && (
-              <motion.div key="readout" className="mb-16">
+              <motion.div key="readout" className="mb-8 sm:mb-16">
                 <MoodReadout mood={mood} sourceText={submittedText} />
               </motion.div>
             )}

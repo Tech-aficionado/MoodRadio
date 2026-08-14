@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, RefreshCw, Check } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { usePlayer } from '@/context/PlayerContext';
 import {
   buildMusicProfile,
   saveProfile,
@@ -50,6 +51,7 @@ export function useMusicProfile() {
 
 export function MusicProfileOnboarding() {
   const { googleAccessToken } = useAuth();
+  const { currentTrack } = usePlayer();
   const [profile, setProfile] = useState<UserMusicProfile | null>(null);
   const [isBuilding, setIsBuilding] = useState(false);
   const [justBuilt, setJustBuilt] = useState(false);
@@ -110,8 +112,15 @@ export function MusicProfileOnboarding() {
 
   if (!googleAccessToken) return null;
 
+  // The collapsed player bar is `fixed bottom-0 ... z-30` and roughly 93px tall
+  // (3px accent + 2px progress + 48px art + py-4). This chip is also fixed at
+  // z-30, so at bottom-4 it painted straight over the player's artwork and
+  // title on every screen — worst on mobile, where there is no spare width to
+  // absorb it. Lift clear whenever a track is present.
+  const bottomClass = currentTrack ? 'bottom-[7.5rem]' : 'bottom-4';
+
   return (
-    <div className="fixed bottom-4 left-6 z-30">
+    <div className={`fixed ${bottomClass} left-6 z-20 transition-all duration-300`}>
       <AnimatePresence mode="wait">
         {isBuilding && (
           <motion.div
