@@ -26,6 +26,45 @@ interface MoodReadoutProps {
   sourceText?: string;
 }
 
+/**
+ * Guarantee the emotion colour is readable on the dark surface.
+ *
+ * `color_hex` comes straight from the model and is not contrast-checked, so a
+ * dark value (deep blues and purples are common for melancholy, grief, fear)
+ * rendered the emotion word nearly invisible — and the mood wash sitting behind
+ * it does not help, because the wash is dark too at low intensity.
+ *
+ * Relative luminance per WCAG; anything below the floor is mixed toward white
+ * until it clears it, which preserves the hue while lifting legibility.
+ */
+function readableOn(hex: string, floor = 0.32): string {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+  if (!m) return '#FFFFFF';
+
+  const int = parseInt(m[1], 16);
+  let r = (int >> 16) & 255;
+  let g = (int >> 8) & 255;
+  let b = int & 255;
+
+  const channel = (c: number) => {
+    const s = c / 255;
+    return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+  };
+  const luminance = () =>
+    0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+
+  // Step toward white in small increments so the hue survives.
+  let guard = 0;
+  while (luminance() < floor && guard < 24) {
+    r = Math.round(r + (255 - r) * 0.12);
+    g = Math.round(g + (255 - g) * 0.12);
+    b = Math.round(b + (255 - b) * 0.12);
+    guard++;
+  }
+
+  return `#${[r, g, b].map((c) => c.toString(16).padStart(2, '0')).join('')}`;
+}
+
 function IntensityMeter({
   intensity,
   color,
@@ -61,6 +100,7 @@ export function MoodReadout({
   sourceText,
 }: MoodReadoutProps) {
   const color = mood.color_hex || '#FFFFFF';
+  const safeColor = readableOn(color);
 
   if (variant === 'chip') {
     return (
@@ -96,39 +136,39 @@ export function MoodReadout({
       exit={{ opacity: 0, y: -12 }}
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
     >
-      <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.3em] text-[#555]">
+      <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.3em] text-white/55">
         Emotion decoded
       </p>
 
       <KineticText
         text={mood.primary_emotion.toUpperCase()}
         className="mb-4 text-[clamp(36px,9vw,64px)]"
-        style={{ color, textShadow: `0 0 48px ${color}44` }}
+        style={{ color: safeColor, textShadow: `0 0 48px ${safeColor}44` }}
       />
 
       <div className="mb-4 flex flex-wrap items-center gap-x-6 gap-y-3">
         <div className="flex items-center gap-2.5">
-          <span className="text-[9px] uppercase tracking-[0.2em] text-[#555]">
+          <span className="text-[9px] uppercase tracking-[0.2em] text-white/55">
             Intensity
           </span>
-          <IntensityMeter intensity={mood.intensity} color={color} />
-          <span className="text-[10px] font-bold tabular-nums text-white/60">
+          <IntensityMeter intensity={mood.intensity} color={safeColor} />
+          <span className="text-[10px] font-bold tabular-nums text-white/75">
             {mood.intensity}/10
           </span>
         </div>
 
         <div className="flex items-center gap-2.5">
-          <span className="text-[9px] uppercase tracking-[0.2em] text-[#555]">
+          <span className="text-[9px] uppercase tracking-[0.2em] text-white/55">
             Energy
           </span>
-          <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/70">
+          <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/80">
             {mood.energy_desire}
           </span>
         </div>
       </div>
 
       {sourceText && (
-        <p className="max-w-sm text-sm italic leading-relaxed text-[#777]">
+        <p className="max-w-sm text-sm italic leading-relaxed text-white/70">
           &ldquo;{sourceText}&rdquo;
         </p>
       )}

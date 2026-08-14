@@ -59,7 +59,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${spaceGrotesk.variable} h-full antialiased`}>
-      <body className="bg-[#1A1A1A] text-white overflow-hidden min-h-screen font-sans">
+      {/* No `overflow-hidden` here. It was locking scroll for the WHOLE app,
+          so /history and /insights — both long `min-h-screen` pages — could
+          never be scrolled at all. The immersive home screen constrains itself
+          with `h-[100dvh] overflow-hidden` on its own <main>, so it does not
+          need a global lock to stay fixed. */}
+      <body className="bg-[#1A1A1A] text-white min-h-screen font-sans">
         <ServiceWorkerRegistration />
         <AuthProvider>
           <MoodProvider>
