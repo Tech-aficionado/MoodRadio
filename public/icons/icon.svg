@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="MoodRadio">
+  <title>MoodRadio</title>
+
+  <!--
+    MoodRadio mark — brutalist equalizer.
+
+    Replaces the previous purple/blue gradient orb with "MR" set in system-ui,
+    which was a leftover from the original "Liquid Emotion" design discarded in
+    the monochrome redesign. It clashed with the current identity, and its 3px
+    strokes and 72px text turned to mush at favicon sizes.
+
+    Five hard-edged bars, no gradients and no text. Their tops trace a valley
+    between two peaks, so the silhouette reads as an M. The form is borrowed
+    from motifs already in the product: the equalizer shown while decoding an
+    emotion, and the 10-step intensity meter.
+
+    Geometry: 5 bars of 64 with 28 gaps = 432 wide, centred with 40 margins.
+    All bars sit on a common 400 baseline with a grounding rule beneath, which
+    echoes the mood accent strip pinned to the top of the app. Content spans
+    y 80-432 so the optical margins match top and bottom.
+  -->
+
+  <rect width="512" height="512" fill="#0D0D0D"/>
+
+  <g fill="#FFFFFF">
+    <!-- peak -->
+    <rect x="40"  y="80" width="64" height="320"/>
+    <!-- descending -->
+    <rect x="132" y="200" width="64" height="200"/>
+    <!-- valley -->
+    <rect x="224" y="280" width="64" height="120"/>
+    <!-- ascending -->
+    <rect x="316" y="200" width="64" height="200"/>
+    <!-- peak -->
+    <rect x="408" y="80" width="64" height="320"/>
+  </g>
+
+  <!-- Grounding rule: same gesture as the app's top accent strip. -->
+  <rect x="40" y="416" width="432" height="16" fill="#FFFFFF" opacity="0.35"/>
+</svg>

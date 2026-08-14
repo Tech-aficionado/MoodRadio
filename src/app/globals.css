@@ -1,0 +1,506 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: #1A1A1A;
+  --color-foreground: #FFFFFF;
+  --color-surface: #222222;
+  --color-border: #333333;
+  --color-muted: #666666;
+  --color-dim: #999999;
+  --font-sans: var(--font-space-grotesk), system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-space-grotesk), system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Mood accent colors — only color in the system */
+  --color-mood-happy: #FFD700;
+  --color-mood-sad: #4A90D9;
+  --color-mood-angry: #E74C3C;
+  --color-mood-calm: #7ED6A0;
+  --color-mood-anxious: #9B59B6;
+  --color-mood-excited: #FF6B35;
+  --color-mood-melancholy: #5B7DB1;
+  --color-mood-nostalgic: #D4A373;
+  --color-mood-peaceful: #88C999;
+  --color-mood-romantic: #E91E63;
+
+  /* Animations */
+  --animate-text-reveal: text-reveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-slide-up: slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-border-pulse: border-pulse 2s ease-in-out infinite;
+  --animate-typewriter: typewriter 0.05s steps(1) forwards;
+}
+
+/* Keyframes */
+@keyframes text-reveal {
+  from {
+    clip-path: inset(0 100% 0 0);
+    opacity: 0;
+  }
+  to {
+    clip-path: inset(0 0% 0 0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes border-pulse {
+  0%, 100% {
+    border-color: #333333;
+  }
+  50% {
+    border-color: #555555;
+  }
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes equalizer {
+  0%, 100% { height: 4px; }
+  25% { height: 18px; }
+  50% { height: 10px; }
+  75% { height: 24px; }
+}
+
+/* Scrollbar — barely visible */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #333333 transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #333333;
+  border-radius: 0;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: #555555;
+}
+
+/* Base */
+body {
+  background: #1A1A1A;
+  color: #FFFFFF;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Selection — only color accent */
+::selection {
+  background: rgba(255, 255, 255, 0.15);
+  color: #FFFFFF;
+}
+
+/* Brutalist card — no radius, hard border */
+.brutalist-card {
+  background: #222222;
+  border: 1px solid #333333;
+  transition: border-color 0.2s ease;
+}
+
+.brutalist-card:hover {
+  border-color: #555555;
+}
+
+/* Interaction: magnetic hover effect class */
+.magnetic-hover {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.magnetic-hover:hover {
+  transform: translateY(-2px);
+}
+
+.magnetic-hover:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Display text utility */
+.display-text {
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+}
+
+/* Accent strip — thin horizontal bar for mood color */
+.accent-strip {
+  height: 3px;
+  width: 100%;
+  transition: background-color 0.6s ease;
+}
+
+/* Input brutal style */
+.brutal-input {
+  background: transparent;
+  border: 2px solid #333333;
+  color: #FFFFFF;
+  font-size: 18px;
+  padding: 20px 24px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.brutal-input:focus {
+  border-color: #FFFFFF;
+}
+
+.brutal-input::placeholder {
+  color: #555555;
+  font-style: italic;
+}
+
+/* Button brutal */
+.brutal-btn {
+  background: #FFFFFF;
+  color: #1A1A1A;
+  border: none;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 14px 28px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.15s ease;
+}
+
+.brutal-btn:hover {
+  transform: translateY(-1px);
+}
+
+.brutal-btn:active {
+  transform: translateY(0) scale(0.97);
+}
+
+.brutal-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Ghost button */
+.brutal-btn-ghost {
+  background: transparent;
+  color: #FFFFFF;
+  border: 1px solid #444444;
+  font-weight: 500;
+  padding: 10px 20px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+}
+
+.brutal-btn-ghost:hover {
+  border-color: #FFFFFF;
+  transform: translateY(-1px);
+}
+
+.brutal-btn-ghost:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Mood bar animation */
+.mood-bar {
+  height: 3px;
+  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --------------------------------------------------------------------------
+   SHOWCASE CYCLE (sign-in gate)
+   --------------------------------------------------------------------------
+   Before sign-in there is no mood, so the atmosphere had nothing to express
+   and the first thing a new user saw was a near-flat dark screen — all the
+   emotional payoff sat behind the auth wall. These layers slowly cross-fade
+   through a range of emotion hues so the gate previews what the app does.
+
+   Implemented as stacked fixed-colour layers cross-fading on `opacity`, NOT
+   by animating --mood-c1/--mood-c2. Animating a custom property needs
+   @property registration for interpolation and would fall back to a hard
+   snap where unsupported; opacity cross-fade is universally smooth and stays
+   on the compositor.
+   -------------------------------------------------------------------------- */
+
+.atmosphere-cycle-layer {
+  position: absolute;
+  inset: -25%;
+  opacity: 0;
+  background:
+    radial-gradient(circle at 30% 25%, var(--cycle-c1) 0%, transparent 58%),
+    radial-gradient(circle at 72% 76%, var(--cycle-c2) 0%, transparent 62%);
+  animation: atmosphere-cycle var(--cycle-dur, 48s) ease-in-out infinite;
+  will-change: opacity;
+}
+
+/* Each layer holds for a beat, then hands over. The windows overlap so the
+   transition reads as a blend rather than a fade to black. */
+@keyframes atmosphere-cycle {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  6% {
+    opacity: var(--cycle-alpha, 0.42);
+  }
+  16% {
+    opacity: var(--cycle-alpha, 0.42);
+  }
+  24% {
+    opacity: 0;
+  }
+}
+
+/* Guarantees text contrast regardless of which hue is currently up.
+   Kept deliberately light: it stacks on top of .atmosphere-vignette, and at
+   full strength the two together muted every hue into brown. Text was raised
+   to ~9:1 / ~5.9:1 independently, which buys the headroom to let colour
+   through here. */
+.content-scrim {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    rgba(10, 10, 10, 0.46) 0%,
+    rgba(10, 10, 10, 0.26) 50%,
+    transparent 80%
+  );
+}
+
+/* Text scramble effect container */
+.scramble-text {
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+}
+
+/* ==========================================================================
+   EMOTIONAL ATMOSPHERE
+   --------------------------------------------------------------------------
+   The detected emotion drives the whole canvas instead of a 3px strip.
+
+   Every animation below is pure CSS, reading values from custom properties
+   that React sets ONCE per mood change. Nothing here re-renders per frame:
+   PR #9 had to undo a re-render storm caused by JS-driven animation, and #8
+   had to tone down particles, so this layer stays on the compositor
+   (transform/opacity only) and never touches React state while running.
+   ========================================================================== */
+
+.atmosphere {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  /* Defaults for the idle (no mood) state — overridden inline per emotion. */
+  --mood-c1: #2A2A2A;
+  --mood-c2: #141414;
+  --mood-alpha: 0.35;
+  --mood-pulse-dur: 9s;
+  --mood-drift-dur: 26s;
+  --mood-stretch: 0.02;
+}
+
+/* Primary colour wash — breathes at a rate set by emotional intensity. */
+.atmosphere-wash {
+  position: absolute;
+  inset: -25%;
+  background:
+    radial-gradient(circle at 28% 22%, var(--mood-c1) 0%, transparent 58%),
+    radial-gradient(circle at 74% 78%, var(--mood-c2) 0%, transparent 62%);
+  opacity: var(--mood-alpha);
+  animation: atmosphere-breathe var(--mood-pulse-dur) ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+/* Secondary drifting layer, so the field never looks static. */
+.atmosphere-drift {
+  position: absolute;
+  inset: -35%;
+  background: radial-gradient(
+    ellipse at 60% 40%,
+    var(--mood-c1) 0%,
+    transparent 55%
+  );
+  opacity: calc(var(--mood-alpha) * 0.55);
+  animation: atmosphere-drift var(--mood-drift-dur) ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Film grain keeps large flat gradients from banding and adds texture. */
+.atmosphere-grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.055;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Vignette pulls focus to the centre and preserves text contrast. */
+.atmosphere-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 50% 45%,
+    transparent 32%,
+    rgba(10, 10, 10, 0.72) 88%,
+    #0A0A0A 100%
+  );
+}
+
+@keyframes atmosphere-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: var(--mood-alpha);
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: calc(var(--mood-alpha) * 1.4);
+  }
+}
+
+@keyframes atmosphere-drift {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  33% {
+    transform: translate3d(5%, -4%, 0) rotate(2deg);
+  }
+  66% {
+    transform: translate3d(-4%, 3%, 0) rotate(-2deg);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+}
+
+/* ==========================================================================
+   KINETIC TYPOGRAPHY
+   The emotion word is the interface: it breathes with intensity and reveals
+   letter by letter.
+   ========================================================================== */
+
+.kinetic-word {
+  display: inline-flex;
+  flex-wrap: wrap;
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  line-height: 0.86;
+  transform-origin: left bottom;
+  animation: kinetic-breathe var(--mood-pulse-dur) ease-in-out infinite;
+  will-change: transform;
+}
+
+.kinetic-letter {
+  display: inline-block;
+  animation: kinetic-rise 0.55s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  will-change: transform, opacity;
+}
+
+@keyframes kinetic-breathe {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(calc(1 + var(--mood-stretch)));
+  }
+}
+
+@keyframes kinetic-rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.35em) rotate(3deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg);
+  }
+}
+
+/* Marquee for long track titles. */
+.marquee-viewport {
+  overflow: hidden;
+  white-space: nowrap;
+  mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 8%,
+    #000 92%,
+    transparent
+  );
+}
+
+.marquee-track {
+  display: inline-block;
+  animation: marquee 18s linear infinite;
+  will-change: transform;
+}
+
+/* Intensity meter bar that pulses with the mood. */
+.intensity-bar {
+  animation: intensity-pulse var(--mood-pulse-dur) ease-in-out infinite;
+}
+
+@keyframes intensity-pulse {
+  0%,
+  100% {
+    opacity: 0.75;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ==========================================================================
+   Motion accessibility — one switch disables the whole ambient system.
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .atmosphere-wash,
+  .atmosphere-drift,
+  .atmosphere-cycle-layer,
+  .kinetic-word,
+  .kinetic-letter,
+  .marquee-track,
+  .intensity-bar {
+    animation: none !important;
+  }
+  .kinetic-letter {
+    opacity: 1;
+    transform: none;
+  }
+  /* Without the cycle animation every layer would sit at opacity 0 and the
+     gate would go flat again, so pin the first hue as a static field. */
+  .atmosphere-cycle-layer {
+    opacity: 0;
+  }
+  .atmosphere-cycle-layer:first-child {
+    opacity: var(--cycle-alpha, 0.42);
+  }
+}
+

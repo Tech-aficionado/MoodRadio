@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="MoodRadio">
+  <title>MoodRadio</title>
+
+  <!--
+    Small-size variant of the MoodRadio mark, served as the SVG favicon.
+
+    The full logo uses five 64-wide bars; at 16x16 those render around 2px with
+    sub-pixel gaps and blur into a grey block. This variant keeps the same M
+    silhouette (peak, valley, peak) with three 112-wide bars, which hold up as
+    distinct shapes in a browser tab.
+
+    Geometry: 3 bars of 112 with 48 gaps = 432 wide, centred with 40 margins,
+    content spanning y 100-412 so it sits optically centred. The grounding rule
+    is dropped — at favicon size it is sub-pixel and only muddies the silhouette.
+  -->
+
+  <rect width="512" height="512" fill="#0D0D0D"/>
+
+  <g fill="#FFFFFF">
+    <rect x="40"  y="100" width="112" height="312"/>
+    <rect x="200" y="260" width="112" height="152"/>
+    <rect x="360" y="100" width="112" height="312"/>
+  </g>
+</svg>

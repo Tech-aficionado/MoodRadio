@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="MoodRadio">
+  <title>MoodRadio</title>
+
+  <!--
+    Maskable variant. Android adaptive icons crop to arbitrary shapes and only
+    guarantee the inner 80% circle (409px diameter, so radius 204.5). The mark
+    is scaled to 0.7 and centred: 432 x 352 becomes 302 x 246, whose half
+    diagonal is ~195px — inside the safe radius even under a circular crop,
+    while filling far more of the tile than a timid scale would.
+
+    The background must bleed to all four edges, since whatever the launcher
+    crops away has to still be icon, not transparency.
+  -->
+
+  <rect width="512" height="512" fill="#0D0D0D"/>
+
+  <g transform="translate(256 256) scale(0.7) translate(-256 -256)">
+    <g fill="#FFFFFF">
+      <rect x="40"  y="80" width="64" height="320"/>
+      <rect x="132" y="200" width="64" height="200"/>
+      <rect x="224" y="280" width="64" height="120"/>
+      <rect x="316" y="200" width="64" height="200"/>
+      <rect x="408" y="80" width="64" height="320"/>
+    </g>
+    <rect x="40" y="416" width="432" height="16" fill="#FFFFFF" opacity="0.35"/>
+  </g>
+</svg>
