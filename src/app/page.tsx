@@ -346,7 +346,7 @@ export default function Home() {
                     delay={0.18}
                   />
                 </h1>
-                <p className="text-[#666] text-sm tracking-wide mt-6 max-w-xs">
+                <p className="text-white/70 text-sm tracking-wide mt-6 max-w-xs">
                   Type your current mood. We decode the emotion<br />and find the right sound.
                 </p>
               </motion.div>
@@ -420,7 +420,7 @@ export default function Home() {
                     />
                   ))}
                 </div>
-                <span className="text-xs text-[#666] tracking-[0.2em] uppercase">
+                <span className="text-xs text-white/65 tracking-[0.2em] uppercase">
                   Decoding emotion
                 </span>
               </motion.div>
@@ -437,7 +437,7 @@ export default function Home() {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.4 }}
               >
-                <p className="text-[10px] text-[#555] tracking-[0.3em] uppercase mb-6">
+                <p className="text-[10px] text-white/55 tracking-[0.3em] uppercase mb-6">
                   OR SELECT A STATE
                 </p>
                 <div className="grid grid-cols-2 gap-[1px] bg-[#333]">
@@ -454,8 +454,16 @@ export default function Home() {
                         onMouseEnter={() => setHoveredPreset(p.label)}
                         onMouseLeave={() => setHoveredPreset(null)}
                       >
+                        {/*
+                          Was `text-[#555]` until hovered — 2.25:1 on #1A1A1A,
+                          well under the 4.5:1 minimum. Worse, hover does not
+                          exist on touch, so every label on a phone was stuck at
+                          that ratio with no way to reveal it. The resting state
+                          is now readable on its own (~7.5:1) and hover is just
+                          emphasis.
+                        */}
                         <span className={`text-[13px] font-bold tracking-[0.15em] transition-colors duration-200 ${
-                          hoveredPreset === p.label ? 'text-white' : 'text-[#555]'
+                          hoveredPreset === p.label ? 'text-white' : 'text-white/70'
                         }`}>
                           {p.label}
                         </span>
