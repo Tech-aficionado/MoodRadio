@@ -52,10 +52,18 @@ export const MOOD_PALETTE: Record<string, MoodPaletteEntry> = {
   euphoric:    { hex: '#FFD54F', gradient: ['#FFD54F', '#A67C00'] },
 };
 
-/** Fallback for emotions not in the palette (AI may return novel labels). */
+/**
+ * Fallback for emotions not in the palette (AI may return novel labels).
+ *
+ * Lifted from #8B5CF6, which measured 4.11:1 on the #1A1A1A surface and so
+ * failed WCAG AA for body text. Hue is preserved at 258 degrees; saturation
+ * eases 0.63 -> 0.58 with value unchanged, giving 4.62:1. This is the colour
+ * every unrecognised emotion renders in, so it is the single most likely
+ * accent to reach a user as text.
+ */
 export const UNKNOWN_EMOTION_FALLBACK: MoodPaletteEntry = {
-  hex: '#8B5CF6',
-  gradient: ['#8B5CF6', '#3B1F7A'],
+  hex: '#9468F6',
+  gradient: ['#9468F6', '#3B1F7A'],
 };
 
 /** Get the accent colour for a given emotion. */

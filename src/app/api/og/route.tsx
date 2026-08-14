@@ -1,13 +1,15 @@
 import { ImageResponse } from 'next/og';
 import { NextRequest } from 'next/server';
 
+import { getEmotionColor } from '@/lib/mood-palette';
+
 export const runtime = 'edge';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const emotion = searchParams.get('emotion') || 'reflective';
   const text = searchParams.get('text') || 'Express your mood, discover your music';
-  const color = searchParams.get('color') || '#8B5CF6';
+  const color = searchParams.get('color') || getEmotionColor(emotion);
 
   // Generate a second gradient color (darker shade)
   const darkerColor = darken(color, 0.4);
