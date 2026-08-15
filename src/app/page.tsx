@@ -150,10 +150,23 @@ export default function Home() {
 
   if (authLoading) {
     return (
-      <main className="flex h-[100dvh] w-screen items-center justify-center bg-[#1A1A1A]">
+      <main className="relative flex h-[100dvh] w-screen items-center justify-center bg-[#1A1A1A]">
         <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-white/30">
           Loading
         </span>
+
+        {/* This branch is what the SERVER renders: the gate below only mounts
+            after Firebase resolves on the client, so without these the shipped
+            HTML for / contains no policy link at all. A non-JS crawler — or an
+            OAuth reviewer checking the page source — would find none. */}
+        <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-6 text-[10px] font-bold uppercase tracking-[0.25em]">
+          <Link href="/privacy" className="text-white/40 transition-colors hover:text-white">
+            Privacy
+          </Link>
+          <Link href="/terms" className="text-white/40 transition-colors hover:text-white">
+            Terms
+          </Link>
+        </div>
       </main>
     );
   }
