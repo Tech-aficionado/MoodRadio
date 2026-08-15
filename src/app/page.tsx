@@ -204,6 +204,24 @@ export default function Home() {
             Read-only YouTube access is used to learn which artists and genres
             you already listen to. Nothing is posted to your account.
           </p>
+
+          {/* Reachable before sign-in on purpose: this is the consent screen,
+              and Google's OAuth review expects the privacy policy to be
+              discoverable from wherever access is requested. */}
+          <div className="mt-6 flex gap-6 text-[10px] font-bold uppercase tracking-[0.25em]">
+            <Link
+              href="/privacy"
+              className="text-white/50 transition-colors hover:text-white"
+            >
+              Privacy
+            </Link>
+            <Link
+              href="/terms"
+              className="text-white/50 transition-colors hover:text-white"
+            >
+              Terms
+            </Link>
+          </div>
         </motion.div>
       </main>
     );
