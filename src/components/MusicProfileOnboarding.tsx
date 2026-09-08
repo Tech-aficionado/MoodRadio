@@ -72,7 +72,6 @@ export function MusicProfileOnboarding() {
       }
 
       const harvest: TasteHarvest = await res.json();
-      console.log('[PROFILE] harvest stats', harvest.stats);
 
       // Even a thin harvest is worth saving — it still carries some signal and
       // prevents us retrying on every render.
